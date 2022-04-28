@@ -28,7 +28,7 @@ export class RawBodyParser implements TypeParser {
         return result;
       })
       .filter((reflectionResult) => {
-        return reflectionResult.typeMirror && reflectionResult.typeMirror.access_modifier === 'global';
+        return reflectionResult.typeMirror;
       })
       .map((reflectionResult) => reflectionResult.typeMirror!);
   }

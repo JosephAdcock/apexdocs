@@ -9,36 +9,38 @@ export function declareMethod(
   startingHeadingLevel: number,
   className = '',
 ): void {
-  methods.forEach((currentMethod) => {
-    const signatureName = isMethod(currentMethod) ? (currentMethod as MethodMirror).name : className;
-    markdownFile.addTitle(`\`${buildSignature(signatureName, currentMethod)}\``, startingHeadingLevel + 2);
-    currentMethod.annotations.forEach((annotation) => {
-      markdownFile.addBlankLine();
-      markdownFile.addText(`\`${annotation.type.toUpperCase()}\``);
+  methods
+    .filter((method) => !!method.docComment?.rawDeclaration) // Filter out any methods with no annotations.
+    .forEach((currentMethod) => {
+      const signatureName = isMethod(currentMethod) ? (currentMethod as MethodMirror).name : className;
+      markdownFile.addTitle(`\`${buildSignature(signatureName, currentMethod)}\``, startingHeadingLevel + 2);
+      currentMethod.annotations.forEach((annotation) => {
+        markdownFile.addBlankLine();
+        markdownFile.addText(`\`${annotation.type.toUpperCase()}\``);
+      });
+
+      if (currentMethod.docComment?.description) {
+        markdownFile.addBlankLine();
+        markdownFile.addText(currentMethod.docComment.description);
+        markdownFile.addBlankLine();
+      }
+
+      if (currentMethod.parameters.length) {
+        addParameters(markdownFile, currentMethod, startingHeadingLevel);
+      }
+
+      if (isMethod(currentMethod)) {
+        addReturns(markdownFile, currentMethod as MethodMirror, startingHeadingLevel);
+      }
+
+      addThrowsBlock(markdownFile, currentMethod, startingHeadingLevel);
+
+      addCustomDocCommentAnnotations(markdownFile, currentMethod);
+
+      if (currentMethod.docComment?.exampleAnnotation) {
+        addExample(markdownFile, currentMethod, startingHeadingLevel);
+      }
     });
-
-    if (currentMethod.docComment?.description) {
-      markdownFile.addBlankLine();
-      markdownFile.addText(currentMethod.docComment.description);
-      markdownFile.addBlankLine();
-    }
-
-    if (currentMethod.parameters.length) {
-      addParameters(markdownFile, currentMethod, startingHeadingLevel);
-    }
-
-    if (isMethod(currentMethod)) {
-      addReturns(markdownFile, currentMethod as MethodMirror, startingHeadingLevel);
-    }
-
-    addThrowsBlock(markdownFile, currentMethod, startingHeadingLevel);
-
-    addCustomDocCommentAnnotations(markdownFile, currentMethod);
-
-    if (currentMethod.docComment?.exampleAnnotation) {
-      addExample(markdownFile, currentMethod, startingHeadingLevel);
-    }
-  });
 
   markdownFile.addHorizontalRule();
 }
